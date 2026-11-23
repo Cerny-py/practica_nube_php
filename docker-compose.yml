@@ -1,0 +1,48 @@
+name: veterinaria
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    networks:
+      - red-veterinaria
+    environment:
+      DB_HOST: db
+      DB_USER: user
+      DB_PASSWORD: applol
+      DB_NAME: veterinaria_db
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r 'exit(@file_get_contents(\"http://127.0.0.1:80/\") === false ? 1 : 0);'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+  
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: veterinaria_db
+      MARIADB_USER: user
+      MARIADB_PASSWORD: applol
+    volumes:
+      - datos-db:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - red-veterinaria
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u$$MARIADB_USER -p$$MARIADB_PASSWORD && mariadb -u$$MARIADB_USER -p$$MARIADB_PASSWORD -e 'USE veterinaria_db; SELECT 1;'"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+networks:
+  red-veterinaria:
+    driver: bridge
+
+volumes:
+  datos-db:
