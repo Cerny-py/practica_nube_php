@@ -7,12 +7,12 @@ services:
     networks:
       - red-veterinaria
     environment:
-      DB_HOST: db
+      DB_HOST: bd
       DB_USER: user
       DB_PASSWORD: applol
       DB_NAME: veterinaria_db
     depends_on:
-      db:
+      bd:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "php -r 'exit(@file_get_contents(\"http://127.0.0.1:80/\") === false ? 1 : 0);'"]
@@ -21,7 +21,7 @@ services:
       retries: 5
       start_period: 5s
   
-  db:
+  bd:
     image: mariadb:11.4
     environment:
       MARIADB_ROOT_PASSWORD: root
